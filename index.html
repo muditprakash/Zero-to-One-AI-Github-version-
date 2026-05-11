@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Blueprint AI - Startup Generator</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2563EB",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-tint": "#0053db",
+                        "surface-container-highest": "#e1e2ed",
+                        "surface-bright": "#faf8ff",
+                        "surface-container-high": "#e7e7f3",
+                        "background": "#faf8ff",
+                        "tertiary-container": "#bc4800",
+                        "on-primary-container": "#eeefff",
+                        "inverse-surface": "#2e3039",
+                        "secondary-container": "#645efb",
+                        "outline": "#737686",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "surface-dim": "#d9d9e5",
+                        "surface": "#faf8ff",
+                        "primary-container": "#2563eb",
+                        "error": "#ba1a1a",
+                        "tertiary": "#943700",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed": "#0f0069",
+                        "on-tertiary-container": "#ffede6",
+                        "outline-variant": "#c3c6d7",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-background": "#191b23",
+                        "secondary": "#4b41e1",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#ffdbcd",
+                        "primary-fixed": "#dbe1ff",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "on-surface": "#191b23",
+                        "secondary-fixed": "#e2dfff",
+                        "inverse-on-surface": "#f0f0fb",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "surface-container-low": "#f3f3fe",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e1e2ed",
+                        "on-secondary-container": "#fffbff",
+                        "on-surface-variant": "#434655",
+                        "on-tertiary-fixed-variant": "#7d2d00"
+                    },
+                    fontFamily: {
+                        "body": ["Inter", "sans-serif"],
+                        "mono-data": ["Space Grotesk", "monospace"]
+                    },
+                    spacing: {
+                        "gutter": "24px",
+                        "xl": "48px",
+                        "xxl": "80px",
+                        "container-max": "1280px"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(243, 244, 246, 1);
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .blueprint-grid {
+            background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+        }
+
+        .fit-gauge {
+            stroke-dasharray: 251.2;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
+
+        // --- Shared Components ---
+
+        const Sidebar = () => {
+            const location = useLocation();
+            const navItems = [
+                { path: "/", label: "Overview", icon: "dashboard" },
+                { path: "/market", label: "Market", icon: "analytics" },
+                { path: "/competition", label: "Competition", icon: "compare_arrows" },
+                { path: "/personas", label: "Personas", icon: "groups" },
+                { path: "/mvp", label: "MVP Specs", icon: "rocket_launch" },
+                { path: "/budget", label: "Budget & Team", icon: "payments" },
+                { path: "/gtm", label: "GTM Strategy", icon: "campaign" },
+                { path: "/timeline", label: "Timeline", icon: "calendar_today" },
+                { path: "/investors", label: "Investors", icon: "monetization_on" },
+            ];
+
+            return (
+                <aside class="fixed left-0 top-0 z-50 w-64 h-screen bg-slate-50 border-r border-slate-200 flex flex-col py-6">
+                    <div class="px-6 mb-8">
+                        <h1 class="text-xl font-black text-blue-600 tracking-tight">Blueprint AI</h1>
+                        <p class="text-xs text-slate-500 font-medium mt-1">v2.4 Co-pilot</p>
+                    </div>
+                    <nav class="flex-1 overflow-y-auto px-2 space-y-1 custom-scrollbar">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={`${location.pathname === item.path ? 'bg-white text-blue-600 shadow-sm border-l-2 border-blue-600' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'} px-4 py-3 flex items-center gap-3 transition-all duration-200 ease-in-out`}
+                            >
+                                <span class="material-symbols-outlined">{item.icon}</span>
+                                <span class="text-sm font-medium">{item.label}</span>
+                            </Link>
+                        ))}
+                    </nav>
+                    <div class="mt-auto px-4">
+                        <button class="w-full bg-blue-600 text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2 text-sm font-bold shadow-md active:opacity-80 transition-opacity">
+                            <span class="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                            Agent Mode
+                        </button>
+                        <div class="mt-6 pt-6 border-t border-slate-200">
+                            <a class="text-slate-600 hover:text-slate-900 px-4 py-2 flex items-center gap-3 text-sm transition-colors" href="#">
+                                <span class="material-symbols-outlined">help_outline</span>
+                                Help Center
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+            );
+        };
+
+        const TopHeader = ({ title }) => {
+            return (
+                <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 h-16 flex justify-between items-center px-8 shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-lg font-bold tracking-tight text-slate-900">{title || "Startup Blueprint Generator"}</h2>
+                        <div class="h-4 w-px bg-slate-200"></div>
+                        <div class="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+                            <span class="material-symbols-outlined text-[18px]">cloud_done</span>
+                            <span>Autosaved</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors">
+                            <span class="material-symbols-outlined">share</span>
+                        </button>
+                        <button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors relative">
+                            <span class="material-symbols-outlined">notifications</span>
+                            <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+                        </button>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 active:opacity-80 transition-all">
+                            Export PDF
+                        </button>
+                        <div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden ml-2">
+                            <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGBj1e4wAkEfb3iGOCocGPxgs8eRYf09szq5hkPxinCwgpTVNk7akcEouhXjPyBVekSg6_ZqNMopD15PYUn6IQ4FGBWTGO4RHeZruVRN7Zk6VnudCD0jQbKU_UA8g_pHfyys_O2usqtrVe4xSFKnhRaUZnYSizcRKiBe3auc3mc9qxNqfRikezraDWzMbvws94s4xOMJOkamsOMEy3NFTamVVzswksn8ZIKB5Z7_WNZqazpYd7xvvNMIPug7n5DQBxsUWQw2fLJs8" />
+                        </div>
+                    </div>
+                </header>
+            );
+        };
+
+        const Layout = ({ children, title }) => (
+            <div className="flex bg-surface min-h-screen">
+                <Sidebar />
+                <main className="ml-64 flex-1 h-screen flex flex-col relative overflow-hidden">
+                    <TopHeader title={title} />
+                    <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                        <div className="max-w-container-max mx-auto">
+                            {children}
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+
+        // --- Screen Components ---
+
+        const DashboardOverview = () => (
+            <Layout title="Dashboard Overview">
+                <section class="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
+                    <div>
+                        <h3 class="text-4xl font-bold text-on-background">Blueprint Alpha</h3>
+                        <p class="text-lg text-on-surface-variant mt-2 max-w-2xl">Your vision for a decentralized e-commerce engine is currently at 84% completion. Let's refine the competitive landscape and investor alignment.</p>
+                    </div>
+                    <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 flex flex-col items-center min-w-[200px]">
+                        <div class="relative w-20 h-20 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90">
+                                <circle class="text-slate-200" cx="40" cy="40" fill="transparent" r="36" stroke="currentColor" stroke-width="8"></circle>
+                                <circle class="text-blue-600" cx="40" cy="40" fill="transparent" r="36" stroke="currentColor" stroke-dasharray="226.2" stroke-dashoffset="36.2" stroke-width="8"></circle>
+                            </svg>
+                            <span class="absolute text-xl font-bold">84%</span>
+                        </div>
+                        <span class="mt-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Overall Fit</span>
+                    </div>
+                </section>
+                <section class="mb-12">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-2xl font-bold">Market Analysis</h4>
+                        <div class="flex gap-2">
+                            <button class="px-4 py-1.5 text-sm font-medium text-blue-600 border border-blue-100 bg-blue-50/50 rounded-lg flex items-center gap-1 hover:bg-blue-50">
+                                <span class="material-symbols-outlined text-[16px]">bolt</span> Improve
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+                        {['TAM', 'SAM', 'SOM'].map((label, idx) => (
+                            <div key={label} class="glass-card p-gutter rounded-xl">
+                                <div class="flex justify-between items-start mb-4">
+                                    <span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">{label}</span>
+                                    <span class="text-green-600 text-xs font-bold flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">trending_up</span> {idx === 2 ? '22%' : idx === 0 ? '12%' : '8%'}
+                                    </span>
+                                </div>
+                                <div class="text-4xl font-bold text-on-background">{idx === 0 ? '$10B' : idx === 1 ? '$2B' : '$500M'}</div>
+                                <p class="text-sm text-on-surface-variant mt-2">
+                                    {idx === 0 ? 'Total Addressable Market in global e-commerce protocols.' : idx === 1 ? 'Serviceable Addressable Market for SMB integration.' : 'Serviceable Obtainable Market (First 3 Years).'}
+                                </p>
+                                <div class="mt-6 h-12 w-full bg-slate-50 rounded-lg flex items-end gap-1 px-2 pb-2">
+                                    {[1, 2, 3, 4, 5, 6].map(i => (
+                                        <div key={i} class={`w-full bg-blue-${i}00 h-[${20 + i * 15}%] rounded-sm`} style={{ height: `${20 + i * 13}%` }}></div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+                <section class="mb-12">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-2xl font-bold">Competitive Landscape</h4>
+                    </div>
+                    <div class="glass-card rounded-xl overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50/50 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Competitor</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Core Strategy</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-widest text-on-surface-variant text-right">Share</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr>
+                                    <td class="px-6 py-6 font-bold">BlockShop Inc.</td>
+                                    <td class="px-6 py-6 text-sm">Aggressive acquisition of existing stores.</td>
+                                    <td class="px-6 py-6 text-right font-bold text-blue-600">34%</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-6 font-bold">Eth-Cart</td>
+                                    <td class="px-6 py-6 text-sm">Pure decentralized protocol zero fees.</td>
+                                    <td class="px-6 py-6 text-right font-bold text-blue-600">12%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                <div class="fixed bottom-8 right-8 bg-on-background text-white p-6 rounded-2xl shadow-2xl max-w-xs border border-white/10 glass-card" style={{ background: "rgba(25, 27, 35, 0.95)" }}>
+                    <div class="flex items-start gap-4">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                        </div>
+                        <div>
+                            <h6 class="text-sm font-bold">Blueprint Insight</h6>
+                            <p class="text-xs text-slate-300 mt-1">Your 'Strategic Moat' is strong. Nebula Ventures will ask about acquisition costs.</p>
+                            <button class="mt-3 text-blue-400 text-xs font-bold hover:text-blue-300">Apply Suggestion →</button>
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        );
+
+        const CompetitionPage = () => (
+            <Layout title="Competition Analysis">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">COMPETITIVE INTELLIGENCE</span>
+                            <span class="text-slate-400 flex items-center gap-1 text-sm">
+                                <span class="material-symbols-outlined text-sm">update</span> Last synced 2m ago
+                            </span>
+                        </div>
+                        <h1 class="text-4xl font-bold text-on-surface">Market Analysis</h1>
+                        <p class="text-lg text-slate-500 mt-2 max-w-2xl">Architectural mapping of market challengers, defining strategic moats and vulnerability vectors.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-semibold shadow-lg">
+                            <span class="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span> Improve with AI
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-12 gap-gutter items-start">
+                    <div class="col-span-12 lg:col-span-9 bg-white border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-outline-variant flex justify-between items-center bg-white/50">
+                            <h3 class="text-xl font-bold">Direct Market Adversaries</h3>
+                            <span class="px-3 py-1 bg-slate-100 rounded-lg text-sm font-medium">3 Identified</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50 border-b border-outline-variant">
+                                    <tr>
+                                        <th class="p-6 font-semibold text-slate-500 text-sm">Competitor</th>
+                                        <th class="p-6 font-semibold text-slate-500 text-sm">Core Strategy</th>
+                                        <th class="p-6 font-semibold text-slate-500 text-sm">Vulnerability</th>
+                                        <th class="p-6 font-semibold text-slate-500 text-sm text-right">Trend</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    {[
+                                        { name: 'BlockShop Inc', strategy: 'Deep vertical integration with legacy ERPs', vulnerability: 'Extreme friction during onboarding', trend: '-2.4%' },
+                                        { name: 'Eth-Cart', strategy: 'Zero-knowledge encryption for privacy', vulnerability: 'High computational checkout costs', trend: '+8.1%' }
+                                    ].map(comp => (
+                                        <tr key={comp.name} class="hover:bg-slate-50 transition-colors">
+                                            <td class="p-6 font-bold">{comp.name}</td>
+                                            <td class="p-6 text-sm">{comp.strategy}</td>
+                                            <td class="p-6 text-sm text-error font-medium">{comp.vulnerability}</td>
+                                            <td class={`p-6 text-right font-bold ${comp.trend.startsWith('+') ? 'text-blue-600' : 'text-error'}`}>{comp.trend}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-span-12 lg:col-span-3 space-y-6">
+                        <div class="bg-white border border-outline-variant rounded-xl p-6 text-center shadow-sm">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Moat Strength</h4>
+                            <div class="relative w-32 h-32 mx-auto mb-4">
+                                <svg class="w-full h-full transform -rotate-90">
+                                    <circle class="text-slate-100" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor" stroke-width="8"></circle>
+                                    <circle class="text-primary" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor" stroke-dasharray="351.85" stroke-dashoffset="105.5" stroke-width="8"></circle>
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span class="text-2xl font-bold text-primary">70%</span>
+                                    <span class="text-[10px] text-slate-400 uppercase font-bold">High Defense</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-slate-500">Your architecture provides a sustainable 2-year lead.</p>
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        );
+
+        const PersonasPage = () => (
+            <Layout title="User Personas">
+                <div class="mb-12">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Section 04</span>
+                        <span class="text-slate-400 text-sm">/ Strategy Phase</span>
+                    </div>
+                    <h2 class="text-4xl font-bold mb-4">Hypotheses & Personas</h2>
+                    <p class="text-lg text-slate-500 max-w-2xl">Validate your market assumptions with data-driven archetypes generated from market signals.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-100 p-8 shadow-sm">
+                        <h3 class="text-xl font-bold mb-6">Core Hypotheses</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-4">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0"><span class="material-symbols-outlined">biotech</span></div>
+                                <div>
+                                    <p class="font-bold">Problem Hypothesis</p>
+                                    <p class="text-sm text-slate-600">Retailers spend >15 hours/week on manual reconciliation.</p>
+                                    <div class="mt-2 flex gap-2"><span class="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase">Validated</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-blue-600 text-white rounded-xl p-8 flex flex-col justify-between relative overflow-hidden">
+                        <div class="relative z-10">
+                            <h3 class="text-xl font-bold mb-2">Persona Insight</h3>
+                            <p class="text-blue-100 text-sm">'The Reluctant Retailer' represents 42% of TAM but has the highest churn risk.</p>
+                        </div>
+                        <div class="mt-8 relative z-10">
+                            <div class="text-4xl font-bold">84%</div>
+                            <div class="text-xs text-blue-200 uppercase font-bold">Market Fit</div>
+                        </div>
+                        <span class="absolute top-0 right-0 p-4 material-symbols-outlined text-blue-400/30 text-6xl">lightbulb</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                        { title: 'The Reluctant Retailer', segment: 'Main Street SME', score: '72%', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBtF0E7iKz1zpdzyhjm_rSHGVuhNb3t2Actix86aDPeJyQDAG2Y8qOr9iTzJx8ix2pPmADVNdsKYNHSjf_lIN7TqfYVXpCZC8_KVXLhpZ40BdBl5ADiz0xguJrCJFyIsY_3Ox-EBmwmNo7suTjeyTsvJ20yJgmbQ701RWD6-QLNfZYpKDbxPMlh49u0_uWrsf4SbHrNHa0_CTzNAIDPMNNcC4WvmATPx78-ZN_4sfpA7EtJLNQy9V4ApnBqH6Xpk9GHu1ICgJwIOUk' },
+                        { title: 'The Crypto Native', segment: 'Web3 Commerce', score: '94%', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB3Ku73jMot6E0NEx5sXNmHWX5mHBKhZGfM1Z1RxZpVyBw4tTZY2-PnshRAXjld9gWaeAFyY4hU47TNg0l02fDBNNyj8LsCGX6ctjbmO0BGv6Ts5OINmggq1qESPI7IafztkHvpsed3Xdv0B0mi5jyD4L_dq90llodnQu0xI0xx95iXdu412Rpv4H-Eh-1siQqO-FB4ruSzYM9bsQo8OOCQYGLc9Pv6GSzvMSO_Qb7fRAOzlA_PcE9t4wQaP8kOYj4qPsjNcXBQnL0' },
+                        { title: 'The Scaling Executive', segment: 'Enterprise', score: '41%', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDBFpRYo_AETn--szylqGFZw6x5Tc8wP4iFxhWf9ruWgnjTKM2LAnLaaDPAHU-konW8TMlRc5QXeKZ3XLzLkOuiOIUUXZvUepU45ByRtHrscSdVsg2-bRAKYm0AzjpK_XJewdTKIvduf7egY7yFy22iHUDlJNgRHq7yjcBc60DfkY9tWUPTqXnG0476N_-LEPLSq2eT-WY_4T5fgGGb-_vcNO9HR7cZDZFdwjrWjoLd0jSKLI0v0vFvNHauB1fIhm4j2muaViUpDz4' }
+                    ].map(persona => (
+                        <div key={persona.title} class="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm flex flex-col">
+                            <div class="h-32 bg-slate-100 relative">
+                                <img class="w-full h-full object-cover" src={persona.img} />
+                                <div class="absolute -bottom-6 left-6 w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-blue-600">account_circle</span>
+                                </div>
+                            </div>
+                            <div class="px-6 pt-10 pb-6 flex-1 flex flex-col">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div><h4 class="font-bold text-slate-900">{persona.title}</h4><p class="text-xs text-slate-400 uppercase">{persona.segment}</p></div>
+                                    <div class="text-xl font-bold text-green-600">{persona.score}</div>
+                                </div>
+                                <button class="mt-auto w-full py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs font-semibold hover:bg-slate-100 transition-colors">View Details</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Layout>
+        );
+
+        const MVPPage = () => (
+            <Layout title="MVP Specification">
+                <div class="mb-12 flex justify-between items-end">
+                    <div class="max-w-2xl">
+                        <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full mb-4">
+                            <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                            <span class="text-[10px] font-bold uppercase tracking-widest">AI-Generated Architecture</span>
+                        </div>
+                        <h2 class="text-4xl font-bold text-slate-900 mb-4">MVP Core Specification</h2>
+                        <p class="text-lg text-slate-500 leading-relaxed">Prioritized feature set to launch your initial version with minimum overhead.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm text-center min-w-[120px]">
+                            <p class="text-xs font-bold text-slate-400 uppercase mb-1">DEV TIME</p>
+                            <p class="text-2xl font-bold text-slate-900">12 wks</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-12 gap-8">
+                    <div class="col-span-12 lg:col-span-5 bg-white rounded-xl border border-slate-100 p-8 shadow-sm">
+                        <h3 class="text-xl font-bold mb-8">Core Features</h3>
+                        <div class="space-y-6">
+                            {[
+                                { id: '01', title: 'Unified Search Engine', desc: 'Cross-platform indexing with NL processing.', tag: 'Must-Have' },
+                                { id: '02', title: 'Collaborative Workspace', desc: 'Real-time multi-user editing environment.', tag: 'Must-Have' },
+                                { id: '03', title: 'Insight Dashboard', desc: 'Visual representation of core metrics.', tag: 'P1' }
+                            ].map(feat => (
+                                <div key={feat.id} class="relative pl-10">
+                                    <div class="absolute left-0 top-0 w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">{feat.id}</div>
+                                    <h4 class="font-bold text-slate-800 mb-1">{feat.title}</h4>
+                                    <p class="text-sm text-slate-500">{feat.desc}</p>
+                                    <span class="inline-block mt-2 bg-slate-100 text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 uppercase">{feat.tag}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div class="col-span-12 lg:col-span-7 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                        <div class="p-8 border-b border-slate-50 flex items-center justify-between">
+                            <h3 class="text-xl font-bold">User Journey Flow</h3>
+                        </div>
+                        <div class="flex-1 blueprint-grid p-12 bg-slate-50/50 min-h-[400px] flex flex-col items-center justify-center gap-12">
+                            <div class="w-48 bg-white p-4 rounded-xl shadow-sm border border-slate-200 text-center font-bold">Landing Page</div>
+                            <div class="flex gap-12">
+                                <div class="w-48 bg-white p-4 rounded-xl border border-slate-200 text-center font-bold">Sign-up</div>
+                                <div class="w-48 bg-blue-600 p-4 rounded-xl shadow-lg text-white text-center font-bold">Setup Wizard</div>
+                            </div>
+                            <div class="w-48 bg-white p-4 rounded-xl border-2 border-blue-100 shadow-xl text-center font-bold">Dashboard</div>
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        );
+
+        const BudgetPage = () => (
+            <Layout title="Budget & Team">
+                <div class="mb-12">
+                    <h1 class="text-4xl font-bold text-on-surface mb-2">Financial Infrastructure</h1>
+                    <p class="text-lg text-slate-500">Precise allocation models for your Seed round. Built for 18-month runway optimization.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                    <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><span class="material-symbols-outlined">local_fire_department</span></div>
+                            <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">+4.2% Efficiency</span>
+                        </div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Monthly Burn</h3>
+                        <p class="text-3xl font-bold">$42,500<span class="text-lg font-normal text-slate-400 ml-1">/mo</span></p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+                        <div class="flex justify-between mb-4">
+                            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><span class="material-symbols-outlined">savings</span></div>
+                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">18 Month Runway</span>
+                        </div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Seed Ask</h3>
+                        <p class="text-3xl font-bold">$1,250,000</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-sm flex flex-col items-center justify-center">
+                        <div class="relative w-20 h-20 flex items-center justify-center">
+                            <svg class="absolute w-full h-full transform -rotate-90"><circle class="text-slate-100" cx="40" cy="40" r="36" fill="none" stroke="currentColor" stroke-width="8" /><circle class="text-green-500" cx="40" cy="40" r="36" fill="none" stroke="currentColor" stroke-width="8" stroke-dasharray="226.2" stroke-dashoffset="30" /></svg>
+                            <span class="text-2xl font-bold">88</span>
+                        </div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-4">Confidence Score</h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-50 flex justify-between items-center">
+                            <h2 class="text-xl font-bold">Team Structure</h2>
+                        </div>
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50 border-b border-slate-100">
+                                <tr>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase">Role</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase">Priority</th>
+                                    <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase text-right">Est. Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                {['CTO / Technical Founder', 'Lead Product Designer', 'Senior Engineer'].map(role => (
+                                    <tr key={role} class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-5 font-bold">{role}</td>
+                                        <td class="px-6 py-5"><span class="px-2 py-1 rounded bg-red-50 text-red-600 text-[10px] font-bold uppercase">Critical</span></td>
+                                        <td class="px-6 py-5 text-right font-bold text-slate-700">$130k-165k</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </Layout>
+        );
+
+        const GTMPage = () => (
+            <Layout title="GTM Strategy">
+                <section class="mb-12 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 text-primary rounded-full border border-primary/10">
+                        <span class="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
+                        <span class="text-xs font-bold uppercase tracking-widest">Strategy Core</span>
+                    </div>
+                    <h2 class="text-4xl font-bold text-on-surface">Go-To-Market Execution</h2>
+                    <p class="text-lg text-slate-500 max-w-2xl">Deploying your solution effectively requires a multi-threaded distribution approach coupled with data-driven messaging.</p>
+                </section>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                    {[
+                        { label: 'Target CAC', val: '$450', color: 'bg-primary' },
+                        { label: 'LTV/CAC', val: '4.2x', color: 'bg-green-500' },
+                        { label: 'Payback', val: '5.2 Mo', color: 'bg-blue-400' },
+                        { label: 'Churn', val: '< 2.5%', color: 'bg-secondary' }
+                    ].map(item => (
+                        <div key={item.label} class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <span class="text-xs font-bold text-slate-400 uppercase">{item.label}</span>
+                            <div class="text-2xl font-bold mt-1">{item.val}</div>
+                            <div class="w-full bg-slate-100 h-1.5 rounded-full mt-4">
+                                <div class={`${item.color} h-1.5 rounded-full`} style={{ width: '70%' }}></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {[
+                        { title: 'Content Marketing', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD8-k2hB928LunQhlQpYica2FuhmFgluTZEH2zQlsqILEIPAEQo0jzzr9TJGV1qBJBKHdu6eIQ4yf6D3ZWlKG6Km32TWkbEdVu1BcZgVzCqypm6dJsvH1CyxEC36ZD5eDlMiFfPEQ_XlJg43DMA0DFXzBF-VeMIX1klEAf7gqO4mMDAMaUzAslgIf7mDHyfG4wsMFA0zTHNwODERrkMRCcryMFqYb5D_gqlaTf4HiOh29bEQWHJaFrFTV7oD0s5FwQoGb8ugTP1nZQ' },
+                        { title: 'Direct Sales', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAIlb3ISQ86mGpVyJ_T77AGtIV7K7TYdR3k2x3dft6H_wwcHvhb7R2MAUrry9upXX2yU7A7AxjJevw9gt5qEnm1fOAMRnyuDXKL5WWsq6LE51i97SC-_UamINDc-RBDmPXP3n7oxnciaDNHAhWFwp-OUoE1canGBes23KGdvcAJx21STyHHCOrj6oaZUDixEJdx-lbBkYpwJsbrl-fJ0iHtgud8DGiqxoy7emUe5plHLDd7bob6U22MlJH-oxAEeO_Q65aBW77W_b4' }
+                    ].map(card => (
+                        <div key={card.title} class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden group">
+                            <div class="h-48 bg-slate-200 relative overflow-hidden">
+                                <img src={card.img} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-6">
+                                    <h4 class="text-white font-bold">{card.title}</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-sm text-slate-500">Deploy high-touch engagement and SEO optimized knowledge bases to scale adoption.</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Layout>
+        );
+
+        const TimelinePage = () => (
+            <Layout title="Master Roadmap">
+                <div class="flex justify-between items-end mb-12">
+                    <div>
+                        <h2 class="text-4xl font-bold mb-4">Master Roadmap 2024</h2>
+                        <p class="text-lg text-slate-500 max-w-2xl">A curated 12-month trajectory from foundational architecture to global Series A preparation.</p>
+                    </div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 overflow-x-auto hide-scrollbar">
+                    <div class="min-w-[1200px] relative h-[400px]">
+                        <div class="absolute top-8 left-0 w-[400px] bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-xl">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-xs font-bold text-blue-600 uppercase">Foundation</span>
+                                <span class="text-[10px] font-bold bg-blue-100 px-2 py-0.5 rounded text-blue-700">Q1</span>
+                            </div>
+                            <h4 class="font-bold mb-1">Architecture & MVP Design</h4>
+                            <p class="text-xs text-slate-600">Core engine development and frontend scaffolding.</p>
+                        </div>
+                        <div class="absolute top-48 left-[450px] w-[500px] bg-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-xl">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-xs font-bold text-indigo-600 uppercase">Growth</span>
+                                <span class="text-[10px] font-bold bg-indigo-100 px-2 py-0.5 rounded text-indigo-700">Q2-Q3</span>
+                            </div>
+                            <h4 class="font-bold mb-1">Closed Beta & Feedback</h4>
+                            <p class="text-xs text-slate-600">Onboarding first 500 lighthouse customers.</p>
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        );
+
+        const InvestorsPage = () => (
+            <Layout title="Investor Suggestions">
+                <div class="mb-12">
+                    <h2 class="text-4xl font-bold mb-2">Investor Suggestions</h2>
+                    <p class="text-lg text-slate-500">AI-curated capital partners based on your market fit, stage, and geographical focus.</p>
+                    <div class="h-1 w-24 bg-primary rounded-full mt-4"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[
+                        { name: 'Sequoia Capital', logo: 'S', match: '98%', focus: 'SaaS, AI', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBNOhpxBDInmHc7LMqQMWaBNs7u2ZaaRydlGWYlNRT2Gto0TLjVeFfyy903Wi9VhctjTvFonUar3gnxX7aC0Obdqm-1vbBpnn-1WWKzLTKUicvT2pnDc3y9EMs3rIzmmhSYvfGgCMWjTDxmQRKdeNq_1kjM0kk3fVHRC4dLVlnkbD0sS42tLt1Mabeb_DKA01vnGgvuvHu16-a2Dek3J-FJsGGgjGigTpBMRnieT5lfqM7qS8wCsyQlHrXgxhl26V-2wZOJ6RNdDN8' },
+                        { name: 'Andreessen Horowitz', logo: 'a16z', match: '95%', focus: 'Crypto, Enterprise' },
+                        { name: 'Accel', logo: 'A', match: '92%', focus: 'Global, Multi-Sector' }
+                    ].map(inv => (
+                        <div key={inv.name} class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm hover:border-primary/30 transition-all">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="w-12 h-12 bg-slate-50 rounded-lg flex items-center justify-center font-bold text-slate-400 border border-slate-100">
+                                    {inv.img ? <img src={inv.img} class="w-8 h-8 object-contain" /> : inv.logo}
+                                </div>
+                                <div class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-xs">bolt</span> {inv.match} Match
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-bold mb-1">{inv.name}</h3>
+                            <p class="text-sm text-slate-500 mb-6">Founders build legendary companies from idea to IPO and beyond.</p>
+                            <div class="space-y-2 text-sm border-t border-slate-50 pt-4">
+                                <div class="flex justify-between"><span class="text-slate-400">Focus</span><span class="font-bold text-primary">{inv.focus}</span></div>
+                                <div class="flex justify-between"><span class="text-slate-400">Stage</span><span class="font-bold">Seed, Series A</span></div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Layout>
+        );
+
+        // --- App Component ---
+
+        const App = () => {
+            return (
+                <MemoryRouter>
+                    <Routes>
+                        <Route path="/" element={<DashboardOverview />} />
+                        <Route path="/market" element={<CompetitionPage />} />
+                        <Route path="/competition" element={<CompetitionPage />} />
+                        <Route path="/personas" element={<PersonasPage />} />
+                        <Route path="/mvp" element={<MVPPage />} />
+                        <Route path="/budget" element={<BudgetPage />} />
+                        <Route path="/gtm" element={<GTMPage />} />
+                        <Route path="/timeline" element={<TimelinePage />} />
+                        <Route path="/investors" element={<InvestorsPage />} />
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
