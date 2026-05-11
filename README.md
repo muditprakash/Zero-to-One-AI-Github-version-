@@ -72,7 +72,21 @@ npm run dev
 
 The frontend will start at `http://localhost:5173`.
 
-### 4. Use It
+### 4. Run Both Simultaneously (One Command)
+
+Once you have completed the initial setup above, you can run both the frontend and backend in one go from the project root directory instead of opening two separate terminals.
+
+**Mac/Linux:**
+```bash
+(cd backend && source venv/bin/activate && python main.py) & (cd frontend && npm run dev)
+```
+
+**Windows (Command Prompt):**
+```cmd
+start /B cmd /c "cd backend && venv\Scripts\activate && python main.py" & cd frontend && npm run dev
+```
+
+### 5. Use It
 
 1. Open `http://localhost:5173` in your browser
 2. Enter your **Gemini API Key** (get one free at [Google AI Studio](https://aistudio.google.com/apikey))
