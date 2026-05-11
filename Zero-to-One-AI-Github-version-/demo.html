@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>ZeroToOne AI - Startup Blueprint Co-pilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#2563eb",
+                "surface": "#faf8ff",
+                "on-background": "#191b23",
+                "on-surface-variant": "#434655",
+                "outline": "#737686",
+                "on-surface": "#191b23",
+              },
+              fontFamily: {
+                "inter": ["Inter", "sans-serif"],
+                "grotesk": ["Space Grotesk", "monospace"]
+              },
+              animation: {
+                'pop-in': 'pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+              },
+              keyframes: {
+                'pop-in': {
+                  '0%': { transform: 'scale(0.95)', opacity: '0' },
+                  '100%': { transform: 'scale(1)', opacity: '1' },
+                }
+              }
+            },
+          },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(243, 244, 246, 1); 
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.03); 
+        }
+        
+        /* Hide interactive elements in PDF */
+        .pdf-export .butterfly-wrapper { display: none !important; }
+
+        .blueprint-grid { 
+            background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px); 
+            background-size: 24px 24px; 
+        }
+
+        /* Butterfly Animations */
+        @keyframes flap-left {
+            0%, 100% { transform: perspective(400px) rotateY(0deg); }
+            50% { transform: perspective(400px) rotateY(70deg); }
+        }
+        @keyframes flap-right {
+            0%, 100% { transform: perspective(400px) rotateY(0deg); }
+            50% { transform: perspective(400px) rotateY(-70deg); }
+        }
+        @keyframes hover-float {
+            0%, 100% { transform: translateY(0) rotate(5deg); }
+            50% { transform: translateY(-8px) rotate(-5deg); }
+        }
+
+        .butterfly-wing-left { animation: flap-left 0.3s ease-in-out infinite; transform-origin: right; }
+        .butterfly-wing-right { animation: flap-right 0.3s ease-in-out infinite; transform-origin: left; }
+        .butterfly-hover { animation: hover-float 3s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-surface font-inter text-on-surface min-h-screen overflow-x-hidden">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation, NavLink, Navigate } = ReactRouterDOM;
+
+        // --- Mock Data ---
+        const MOCK_DATA = {
+            idea: "AI-powered Gym Marketplace",
+            blueprint: {
+                market_analysis: {
+                    tam: { amount: "$120B", description: "Global digital fitness and wellness market projected by 2028.", growth: "18.4%" },
+                    sam: { amount: "$15B", description: "Remote coaching and personalized digital training segment.", growth: "12.1%" },
+                    som: { amount: "$2.4B", description: "Initial target within Gen-Z urban professionals in tier-1 cities.", growth: "24.5%" },
+                    trends: [
+                        "Shift towards hybrid fitness models (home + gym)",
+                        "Rising demand for hyper-personalized AI coaching",
+                        "Gamification of wellness and fitness activities",
+                        "Integration of wearable health data in routine training"
+                    ]
+                },
+                competitive_landscape: {
+                    competitors: [
+                        { name: "Future", description: "High-end 1-on-1 remote personal training.", share: "12%" },
+                        { name: "Peloton", description: "Hardware-integrated fitness content and community.", share: "34%" },
+                        { name: "Freeletics", description: "AI-driven bodyweight training app.", share: "22%" }
+                    ],
+                    differentiation: "Direct real-time bio-feedback integration with proprietary L2-bridge for trainer payments.",
+                    moat: "Proprietary motion-capture algorithm and a two-sided network effect between elite trainers and power users."
+                },
+                personas: [
+                    { name: "Alex the Urban Pro", segment: "Busy Professionals", goals: ["Efficient 30-min workouts", "Data tracking"], pain_points: ["Lack of time", "Inconsistent coaching"] },
+                    { name: "Sarah the Fitness Enthusiast", segment: "Power Users", goals: ["Advanced performance metrics", "Elite coaching"], pain_points: ["Plateaued progress", "Generic plans"] },
+                    { name: "Chris the Remote Trainer", segment: "Service Providers", goals: ["Scale client base", "Automate admin"], pain_points: ["Manual tracking", "Low client retention"] }
+                ],
+                mvp_spec: {
+                    features: ["Real-time Form Analysis", "Dynamic Workout Scheduler", "Secure Payment Gateway", "Trainer Dashboard"],
+                    user_flows: ["Onboarding & Goal Setting", "Booking a Session", "Real-time AI Workout Tracking", "Post-workout Review"]
+                },
+                budget_and_team: {
+                    cost: "$450,000",
+                    roles: ["CTO / Co-founder", "Senior AI Engineer", "Product Designer", "Full-stack Developer"],
+                    hiring_plan: "Phase 1: Secure core technical team (Founders + 1 Dev). Phase 2: Add specialized AI talent after seed round."
+                },
+                gtm_strategy: {
+                    messaging: "Your personal elite trainer, powered by AI, available 24/7.",
+                    channels: ["Instagram/TikTok Influencers", "Strategic Gym Partnerships", "Tech Community Newsletters"],
+                    metrics: ["LTV/CAC Ratio", "Weekly Active Users", "Trainer Retention Rate"]
+                },
+                timeline: {
+                    roadmap_12_months: [
+                        "Q1 Foundation: Core AI algorithm development and closed beta.",
+                        "Q2 Alpha: Public beta launch with 100 select trainers.",
+                        "Q3 Growth: Marketing blitz and partnership expansion.",
+                        "Q4 Scaling: Series A funding and global rollout."
+                    ]
+                },
+                investor_suggestions: [
+                    { name: "Sequoia Capital", focus: "Early stage tech", fit_score: 98 },
+                    { name: "Andreessen Horowitz", focus: "Consumer internet", fit_score: 95 },
+                    { name: "Accel", focus: "SaaS & Marketplaces", fit_score: 92 }
+                ]
+            }
+        };
+
+        // --- Shared Components ---
+
+        const ButterflyAI = ({ isActive, message, onClick, className = 'top-0 left-0', cloudDelay = false }) => {
+            const anchorRef = useRef(null);
+            const [rect, setRect] = useState(null);
+
+            useEffect(() => {
+                const updateRect = () => {
+                    if (anchorRef.current) {
+                        setRect(anchorRef.current.getBoundingClientRect());
+                    }
+                };
+                
+                updateRect();
+                const timeout = setTimeout(updateRect, 100);
+                
+                window.addEventListener('scroll', updateRect, true);
+                window.addEventListener('resize', updateRect);
+                
+                return () => {
+                    clearTimeout(timeout);
+                    window.removeEventListener('scroll', updateRect, true);
+                    window.removeEventListener('resize', updateRect);
+                };
+            }, []);
+
+            return (
+                <div className={`butterfly-wrapper absolute z-[999] transition-all duration-1000 ${isActive ? 'scale-110' : 'scale-90 opacity-90'} ${className}`} ref={anchorRef}>
+                    
+                    <div className={`absolute -translate-x-1/2 -translate-y-1/2 w-16 h-16 z-30 cursor-pointer pointer-events-auto`} onClick={onClick}></div>
+
+                    {rect && ReactDOM.createPortal(
+                        <div 
+                            style={{ 
+                                position: 'fixed', 
+                                top: rect.top, 
+                                left: rect.left,
+                                zIndex: 999999
+                            }}
+                            className="pointer-events-none"
+                        >
+                            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-6 px-8 py-6 text-white text-[10px] font-medium text-center transition-all duration-700 w-[300px] leading-relaxed flex items-center justify-center origin-bottom ${isActive ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-50'} ${isActive && cloudDelay ? 'delay-1000' : 'delay-0'}`}>
+                                <svg className="absolute inset-0 w-full h-full drop-shadow-xl" viewBox="0 0 100 60" preserveAspectRatio="none">
+                                    <path d="M10,30 Q0,0 50,10 Q100,0 90,30 Q100,60 50,50 Q0,60 10,30 Z" fill="url(#butterflyGradient)" />
+                                    <defs>
+                                        <linearGradient id="butterflyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style={{ stopColor: '#6366f1', stopOpacity: 1 }} />
+                                            <stop offset="100%" style={{ stopColor: '#2563eb', stopOpacity: 1 }} />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div className="relative z-10">
+                                    {message}
+                                </div>
+                            </div>
+                        </div>,
+                        document.body
+                    )}
+                    {/* Butterfly Body & Wings - Centered precisely on the anchor */}
+                    <div className={`absolute -translate-x-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center transition-transform duration-700 pointer-events-none ${isActive ? 'butterfly-hover' : ''}`}>
+                        <div className="absolute w-[3px] h-6 bg-slate-900 rounded-full z-20 shadow-sm"></div>
+                        
+                        {/* Wing Left */}
+                        <div 
+                            className={`absolute right-1/2 w-6 h-8 bg-blue-500 rounded-l-full rounded-tr-full shadow-inner transition-all duration-700 ${!isActive ? 'rotate-y-[80deg]' : 'butterfly-wing-left'}`}
+                            style={{ transform: !isActive ? 'perspective(400px) rotateY(80deg)' : '' }}
+                        ></div>
+                        
+                        {/* Wing Right */}
+                        <div 
+                            className={`absolute left-1/2 w-6 h-8 bg-blue-600 rounded-r-full rounded-tl-full shadow-inner transition-all duration-700 ${!isActive ? 'rotate-y-[-80deg]' : 'butterfly-wing-right'}`}
+                            style={{ transform: !isActive ? 'perspective(400px) rotateY(-80deg)' : '' }}
+                        ></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Sidebar = ({ idea, isOpen, setIsOpen }) => {
+            const navigate = useNavigate();
+            const navItems = [
+                { path: '/market', label: 'Market', icon: 'bar_chart' },
+                { path: '/competition', label: 'Competition', icon: 'compare_arrows' },
+                { path: '/personas', label: 'Personas', icon: 'groups' },
+                { path: '/mvp', label: 'MVP Specs', icon: 'rocket_launch' },
+                { path: '/budget', label: 'Budget & Team', icon: 'payments' },
+                { path: '/gtm', label: 'GTM Strategy', icon: 'campaign' },
+                { path: '/timeline', label: 'Timeline', icon: 'calendar_today' },
+                { path: '/investors', label: 'Investors', icon: 'monetization_on' },
+            ];
+
+            return (
+                <aside className={`fixed left-0 top-0 z-50 w-64 h-screen bg-slate-50 border-r border-slate-200 flex flex-col py-6 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+                    <div className="px-6 mb-8">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h1 className="text-xl font-black text-blue-600 tracking-tight cursor-pointer" onClick={() => { navigate('/'); if(setIsOpen) setIsOpen(false); }}>
+                                    ZeroToOne AI
+                                </h1>
+                                <p className="text-xs text-slate-500 font-medium mt-1">v2.4 Co-pilot</p>
+                            </div>
+                            <button className="md:hidden text-slate-400 hover:bg-slate-200 rounded p-1 -mt-1 -mr-2" onClick={() => setIsOpen(false)}>
+                                <span className="material-symbols-outlined text-[20px]">close</span>
+                            </button>
+                        </div>
+                        {idea && (
+                            <div className="mt-3 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
+                                <p className="text-xs text-blue-700 font-semibold truncate">
+                                    <span className="material-symbols-outlined text-[12px] mr-1">lightbulb</span>
+                                    {idea}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                    <nav className="flex-1 overflow-y-auto px-2 space-y-1 custom-scrollbar">
+                        {navItems.map((item) => (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => setIsOpen && setIsOpen(false)}
+                                className={({ isActive }) =>
+                                    `${isActive ? 'bg-white text-blue-600 shadow-sm border-l-2 border-blue-600' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'} px-4 py-3 flex items-center gap-3 transition-all duration-200 rounded-r-lg`
+                                }
+                            >
+                                <span className="material-symbols-outlined">{item.icon}</span>
+                                <span className="text-sm font-medium">{item.label}</span>
+                            </NavLink>
+                        ))}
+                    </nav>
+                    <div className="mt-auto px-4 pt-6 border-t border-slate-200">
+                        <a className="text-slate-600 hover:text-slate-900 px-4 py-2 flex items-center gap-3 text-sm transition-colors font-medium" href="#">
+                            <span className="material-symbols-outlined">help_outline</span>
+                            Help Center
+                        </a>
+                        <p className="px-4 mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                            ZeroToOne AI © 2026
+                        </p>
+                    </div>
+                </aside>
+            );
+        };
+
+        const TopHeader = ({ title, onMenuClick }) => {
+            const [isExporting, setIsExporting] = useState(false);
+
+            const handleExportPDF = async () => {
+                setIsExporting(true);
+                
+                const container = document.createElement('div');
+                // Force strict positioning and width to prevent any browser viewport constraints
+                container.style.position = 'absolute';
+                container.style.top = '0';
+                container.style.left = '0';
+                container.style.width = '1280px';
+                container.style.minWidth = '1280px';
+                container.style.maxWidth = '1280px';
+                container.style.margin = '0';
+                container.style.padding = '0';
+                container.style.zIndex = '-9999';
+                document.body.appendChild(container);
+                
+                const root = ReactDOM.createRoot(container);
+                root.render(<BlueprintReport data={MOCK_DATA} />);
+                
+                // Allow time for React to render and Tailwind to apply styles
+                setTimeout(() => {
+                    const element = container.querySelector('#blueprint-pdf-container');
+                    
+                    const opt = {
+                        margin: 0,
+                        filename: 'startup-blueprint.pdf',
+                        image: { type: 'jpeg', quality: 1 },
+                        html2canvas: { 
+                            scale: 2, 
+                            useCORS: true, 
+                            windowWidth: 1280,
+                            width: 1280,
+                            x: 0,
+                            y: 0,
+                            scrollY: 0,
+                            scrollX: 0
+                        },
+                        jsPDF: { unit: 'px', format: [1280, 1810], orientation: 'portrait' }
+                    };
+                    
+                    html2pdf().set(opt).from(element).save().then(() => {
+                        root.unmount();
+                        document.body.removeChild(container);
+                        setIsExporting(false);
+                    }).catch(err => {
+                        console.error('PDF Export Error:', err);
+                        root.unmount();
+                        document.body.removeChild(container);
+                        setIsExporting(false);
+                    });
+                }, 1500); // Increased timeout to ensure rendering is complete
+            };
+
+            return (
+                <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 h-16 flex justify-between items-center px-4 md:px-8 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <button className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors" onClick={onMenuClick}>
+                            <span className="material-symbols-outlined text-[24px]">menu</span>
+                        </button>
+                        <h2 className="text-lg font-bold tracking-tight text-slate-900 truncate max-w-[150px] sm:max-w-xs md:max-w-none">{title}</h2>
+                    </div>
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <button className="hidden md:flex p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors items-center gap-2 group">
+                            <span className="material-symbols-outlined text-[20px]">share</span>
+                            <span className="text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">Share</span>
+                        </button>
+                        <button 
+                            onClick={handleExportPDF}
+                            disabled={isExporting}
+                            className={`bg-blue-600 text-white px-3 md:px-5 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-bold shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center gap-1 md:gap-2 ${isExporting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                            {isExporting ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                            ) : (
+                                <span className="material-symbols-outlined text-[16px] md:text-[20px]">picture_as_pdf</span>
+                            )}
+                            <span className="hidden md:inline">{isExporting ? 'Exporting...' : 'Export PDF'}</span>
+                            <span className="md:hidden">{isExporting ? '...' : 'PDF'}</span>
+                        </button>
+                    </div>
+                </header>
+            );
+        };
+
+        const Layout = ({ children, title, idea, hideNav }) => {
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+            if (hideNav) {
+                return (
+                    <div className="bg-surface w-full p-12">
+                        <div className="max-w-[1280px] mx-auto">
+                            {children}
+                        </div>
+                    </div>
+                );
+            }
+            return (
+                <div className="flex bg-surface min-h-screen relative">
+                    <Sidebar idea={idea} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+                    <main className="md:ml-64 flex-1 flex flex-col relative min-h-screen transition-all duration-300 w-full">
+                        <TopHeader title={title} onMenuClick={() => setIsSidebarOpen(true)} />
+                        <div className="flex-1 p-4 md:p-8 custom-scrollbar w-full">
+                            <div className="max-w-[1280px] mx-auto">
+                                {children}
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Mobile Overlay */}
+                    {isSidebarOpen && (
+                        <div 
+                            className="fixed inset-0 bg-slate-900/40 z-40 md:hidden backdrop-blur-sm transition-opacity"
+                            onClick={() => setIsSidebarOpen(false)}
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        // --- Page Components ---
+
+        const LandingPage = () => {
+            const [idea, setIdea] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [showButterfly, setShowButterfly] = useState(false);
+            const navigate = useNavigate();
+
+            useEffect(() => {
+                if (idea.length === 1) setShowButterfly(true);
+                else if (idea.length === 0) setShowButterfly(false);
+            }, [idea]);
+
+            const handleGenerate = () => {
+                if (!idea.trim()) return;
+                setLoading(true);
+                setTimeout(() => {
+                    setLoading(false);
+                    navigate('/market');
+                }, 2500);
+            };
+
+            return (
+                <div className="min-h-screen bg-surface flex flex-col items-center justify-center px-6 relative overflow-hidden">
+                    <div className="absolute inset-0 blueprint-grid opacity-30" />
+                    <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-[120px]" />
+                    <div className="absolute top-[20%] -right-[10%] w-[35%] h-[35%] bg-indigo-400/15 rounded-full blur-[100px]" />
+
+                    <div className="relative z-10 w-full max-w-3xl">
+                        <div className="text-center mb-10 md:mb-16">
+                            <h1 className="text-5xl md:text-7xl font-black text-on-background tracking-tight leading-tight mb-4 md:mb-6">
+                                ZeroToOne<span className="text-blue-600"> AI</span>
+                            </h1>
+                            <p className="text-xl md:text-2xl text-on-surface-variant font-medium tracking-tight px-4 md:px-0">
+                                From idea to investor-ready startup—instantly.
+                            </p>
+                        </div>
+
+                        <div className="glass-card rounded-2xl p-6 md:p-8 shadow-2xl relative mt-8 z-[999]">
+                            <ButterflyAI 
+                                isActive={showButterfly} 
+                                onClick={() => setShowButterfly(prev => !prev)}
+                                cloudDelay={true}
+                                message="Hey !! Thanks for checking my innovation, this is a demo version without any backend support made for the purpose of demo and giving you the feel of the product. Expect the results with the mock up data here. I hope you enjoy the work" 
+                                className={showButterfly ? '-top-12 -left-6 md:-left-48' : 'top-0 left-0 opacity-0'} 
+                            />
+                            
+                            <div className="flex justify-between items-center mb-3">
+                                <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px]">lightbulb</span>
+                                    Describe your startup idea
+                                </label>
+                            </div>
+
+                            <textarea
+                                className="w-full border-2 border-slate-100 focus:border-blue-400 rounded-xl p-4 text-slate-900 placeholder-slate-400 resize-none focus:outline-none transition-all duration-500 bg-white/80"
+                                rows={4}
+                                placeholder="e.g. An AI-powered app that connects independent gym trainers with remote clients..."
+                                value={idea}
+                                onChange={(e) => setIdea(e.target.value)}
+                            />
+
+                            {idea.length > 0 && (
+                                <div className="mt-4 animate-pop-in">
+                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-2">
+                                        <span>Blueprint Precision</span>
+                                        <span>{Math.min(100, Math.round((idea.length / 250) * 100))}%</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-blue-500 transition-all duration-700"
+                                            style={{ width: `${Math.min(100, (idea.length / 250) * 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={handleGenerate}
+                                disabled={loading || !idea.trim()}
+                                className="mt-8 w-full font-bold py-4 rounded-xl text-base shadow-lg transition-all duration-300 flex items-center justify-center gap-3 bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50"
+                            >
+                                {loading ? (
+                                    <React.Fragment>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                                        <span>Generating...</span>
+                                    </React.Fragment>
+                                ) : (
+                                    <React.Fragment>
+                                        <span className="material-symbols-outlined">rocket_launch</span>
+                                        Generate Blueprint
+                                    </React.Fragment>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const MarketPage = ({ data, hideNav }) => {
+            const [showButterfly, setShowButterfly] = useState(false);
+            const idea = data.idea;
+            const blueprint = data.blueprint;
+            const market = blueprint.market_analysis;
+            return (
+                <Layout title="Market Analysis" idea={idea} hideNav={hideNav}>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0 mb-8 relative z-[999]">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">MARKET INTELLIGENCE</span>
+                            </div>
+                            <h1 className="text-4xl font-bold text-on-surface">Market Analysis</h1>
+                            <p className="text-lg text-slate-500 mt-2 max-w-2xl">Total addressable opportunity, segmentation, and trend mapping for your startup.</p>
+                        </div>
+                        <div className="relative w-full md:w-32 h-16 md:h-32 flex items-center justify-center md:mr-16 mt-0 md:mt-4 z-[999]">
+                            <ButterflyAI 
+                                isActive={showButterfly} 
+                                onClick={() => setShowButterfly(prev => !prev)} 
+                                message="We will also include guided demand hypothesis and validation system here in this section" 
+                                className="top-1/2 left-1/2" 
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        {[
+                            { label: 'TAM', desc: 'Total Addressable Market', amount: market.tam.amount, info: market.tam.description, color: 'border-blue-500' },
+                            { label: 'SAM', desc: 'Serviceable Addressable Market', amount: market.sam.amount, info: market.sam.description, color: 'border-indigo-500' },
+                            { label: 'SOM', desc: 'Serviceable Obtainable Market', amount: market.som.amount, info: market.som.description, color: 'border-violet-500' },
+                        ].map(({ label, desc, amount, info, color }) => (
+                            <div key={label} className={`bg-white rounded-xl border-l-4 ${color} p-6 shadow-sm`}>
+                                <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{desc}</span>
+                                <div className="mt-3 text-4xl font-black text-slate-900 font-grotesk">{amount}</div>
+                                <p className="text-sm text-slate-500 mt-3 leading-relaxed">{info}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 mb-8">
+                        <h3 className="text-xl font-bold mb-6">Key Market Trends</h3>
+                        <div className="space-y-4">
+                            {market.trends && market.trends.map((trend, i) => (
+                                <div key={i} className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
+                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">{i + 1}</div>
+                                    <p className="text-slate-700 font-medium pt-1">{trend}</p>
+                                    <span className="ml-auto text-xs font-bold text-green-600 flex items-center gap-1 shrink-0 pt-1">
+                                        <span className="material-symbols-outlined text-[14px]">trending_up</span> Rising
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Layout>
+            );
+        };
+
+        const CompetitionPage = ({ data, hideNav }) => {
+            const [showButterfly, setShowButterfly] = useState(false);
+            const idea = data.idea;
+            const blueprint = data.blueprint;
+            const comp = blueprint.competitive_landscape;
+            return (
+                <Layout title="Competition Analysis" idea={idea} hideNav={hideNav}>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-0 mb-8">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">COMPETITIVE INTELLIGENCE</span>
+                            </div>
+                            <h1 className="text-4xl font-bold text-on-surface">Competitive Landscape</h1>
+                            <p className="text-lg text-slate-500 mt-2 max-w-2xl">Architectural mapping of market challengers and strategic moats.</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-[100]">
+                        <div className="lg:col-span-9 bg-white border border-slate-100 rounded-xl shadow-sm overflow-hidden w-full">
+                            <div className="p-4 md:p-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 bg-white/50">
+                                <h3 className="text-xl font-bold">Direct Market Adversaries</h3>
+                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-sm font-medium">{comp.competitors.length} Identified</span>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-slate-50 border-b border-slate-100">
+                                        <tr>
+                                            <th className="p-6 font-semibold text-slate-500 text-sm">Competitor</th>
+                                            <th className="p-6 font-semibold text-slate-500 text-sm">Strategy</th>
+                                            <th className="p-6 font-semibold text-slate-500 text-sm text-right">Share</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {comp.competitors && comp.competitors.map((c, i) => (
+                                            <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                                <td className="p-6 font-bold">{c.name}</td>
+                                                <td className="p-6 text-sm text-slate-600">{c.description}</td>
+                                                <td className="p-6 text-right font-bold text-blue-600 font-grotesk">{c.share}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div className="lg:col-span-3 space-y-6 w-full">
+                            <div className="bg-white border border-slate-100 rounded-xl p-6 text-center shadow-sm">
+                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Moat Strength</h4>
+                                <div className="relative w-32 h-32 mx-auto mb-4">
+                                    <svg className="w-full h-full transform -rotate-90">
+                                        <circle className="text-slate-100" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor" strokeWidth="8" />
+                                        <circle className="text-blue-600" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor" strokeDasharray="351.85" strokeDashoffset="105" strokeWidth="8" />
+                                    </svg>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-2xl font-bold text-blue-600">70%</span>
+                                        <span className="text-[10px] text-slate-400 uppercase font-bold">High Defense</span>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-slate-500">Sustainable 2-year competitive lead.</p>
+                            </div>
+                            
+                            <div className="relative w-full h-32 flex items-center justify-center mt-6 z-[999]">
+                                <ButterflyAI 
+                                    isActive={showButterfly} 
+                                    onClick={() => setShowButterfly(prev => !prev)} 
+                                    message="We will include competitor vulnerabilities, differentiable features, overlapping features, etc. here in this section." 
+                                    className="top-1/2 left-1/2" 
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-blue-600 text-white rounded-xl p-6 shadow-lg">
+                            <span className="material-symbols-outlined text-blue-200 text-[24px] mb-3 block" style={{ fontVariationSettings: "'FILL' 1" }}>shield</span>
+                            <h4 className="font-bold text-lg mb-2">Strategic Moat</h4>
+                            <p className="text-blue-100 text-sm leading-relaxed">{comp.moat}</p>
+                        </div>
+                        <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                            <span className="material-symbols-outlined text-blue-600 text-[24px] mb-3 block">compare_arrows</span>
+                            <h4 className="font-bold text-lg mb-2">Differentiation Strategy</h4>
+                            <p className="text-slate-600 text-sm leading-relaxed">{comp.differentiation}</p>
+                        </div>
+                    </div>
+                </Layout>
+            );
+        };
+
+        const PersonasPage = ({ data, hideNav }) => {
+            const [showButterfly, setShowButterfly] = useState(false);
+            const idea = data.idea;
+            const blueprint = data.blueprint;
+            const personas = blueprint.personas || [];
+            const avatarColors = ['bg-blue-100 text-blue-600', 'bg-violet-100 text-violet-600', 'bg-emerald-100 text-emerald-600'];
+            
+            return (
+                <Layout title="User Personas" idea={idea} hideNav={hideNav}>
+                    <div className="mb-12 flex flex-col md:flex-row md:justify-between items-start md:items-center gap-6 md:gap-0 relative z-[999]">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Section 04</span>
+                                <span className="text-slate-400 text-sm">/ Strategy Phase</span>
+                            </div>
+                            <h2 className="text-4xl font-bold mb-4">Hypotheses & Personas</h2>
+                            <p className="text-lg text-slate-500 max-w-2xl">Validate your market assumptions with data-driven archetypes.</p>
+                        </div>
+                        <div className="relative w-full md:w-32 h-16 md:h-32 flex items-center justify-center mr-0 md:mr-12 mt-0 md:mt-4 z-[999]">
+                            <ButterflyAI 
+                                isActive={showButterfly} 
+                                onClick={() => setShowButterfly(prev => !prev)} 
+                                message="we will integrate the social media search here which will figure out the people matching the personas we made here and strategy to reach them out for validation" 
+                                className="top-1/2 left-1/2" 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 p-8 shadow-sm">
+                            <h3 className="text-xl font-bold mb-6">Persona Summary</h3>
+                            <div className="space-y-3">
+                                {personas.map((p, i) => (
+                                    <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-full ${avatarColors[i % avatarColors.length]} flex items-center justify-center font-bold text-sm shrink-0`}>
+                                            {p.name.charAt(0)}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-slate-800">{p.name}</p>
+                                            <p className="text-sm text-slate-500">{p.segment}</p>
+                                        </div>
+                                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase">Validated</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="bg-blue-600 text-white rounded-xl p-8 flex flex-col justify-between relative overflow-hidden">
+                            <div className="relative z-10">
+                                <h3 className="text-xl font-bold mb-2">Persona Insight</h3>
+                                <p className="text-blue-100 text-sm">{personas[0].name} represents your highest-value early adopter segment.</p>
+                            </div>
+                            <div className="mt-8 relative z-10">
+                                <div className="text-4xl font-bold">{personas.length}</div>
+                                <div className="text-xs text-blue-200 uppercase font-bold">Personas Generated</div>
+                            </div>
+                            <span className="absolute top-0 right-0 p-4 material-symbols-outlined text-blue-400/30 text-6xl">lightbulb</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {personas.map((persona, i) => (
+                            <div key={i} className="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm flex flex-col">
+                                <div className={`h-24 flex items-center justify-center ${avatarColors[i % avatarColors.length].split(' ')[0]}`}>
+                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-md flex items-center justify-center">
+                                        <span className={`material-symbols-outlined ${avatarColors[i % avatarColors.length].split(' ')[1]} text-[28px]`} style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
+                                    </div>
+                                </div>
+                                <div className="px-6 pt-4 pb-6 flex-1 flex flex-col">
+                                    <div className="mb-4">
+                                        <h4 className="font-bold text-slate-900 text-lg">{persona.name}</h4>
+                                        <p className="text-xs text-slate-400 uppercase font-semibold tracking-wider">{persona.segment}</p>
+                                    </div>
+                                    <div className="mb-4">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Goals</p>
+                                        <ul className="space-y-1.5">
+                                            {persona.goals && persona.goals.map((g, j) => (
+                                                <li key={j} className="flex items-start gap-2 text-sm text-slate-600"><span className="material-symbols-outlined text-green-500 text-[14px] mt-0.5">check_circle</span>{g}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="mb-6">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Pain Points</p>
+                                        <ul className="space-y-1.5">
+                                            {persona.pain_points && persona.pain_points.map((p, j) => (
+                                                <li key={j} className="flex items-start gap-2 text-sm text-slate-600"><span className="material-symbols-outlined text-red-400 text-[14px] mt-0.5">warning</span>{p}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <button className="mt-auto w-full py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors">View Full Profile</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Layout>
+            );
+        };
+
+        const MVPPage = ({ data, hideNav }) => {
+            const [showButterfly, setShowButterfly] = useState(false);
+            const idea = data.idea;
+            const blueprint = data.blueprint;
+            const mvp = blueprint.mvp_spec;
+            return (
+                <Layout title="MVP Specification" idea={idea} hideNav={hideNav}>
+                    <div className="mb-12 flex justify-between items-end">
+                        <div className="max-w-2xl">
+                            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full mb-4">
+                                <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest">AI-Generated Architecture</span>
+                            </div>
+                            <h2 className="text-4xl font-bold text-slate-900 mb-4">MVP Core Specification</h2>
+                            <p className="text-lg text-slate-500 leading-relaxed">Prioritized feature set to launch your initial version with minimum overhead.</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="lg:col-span-5 bg-white rounded-xl border border-slate-100 p-8 shadow-sm">
+                            <h3 className="text-xl font-bold mb-8">Core Features</h3>
+                            <div className="space-y-6">
+                                {mvp.features && mvp.features.map((feat, i) => (
+                                    <div key={i} className="relative pl-12">
+                                        <div className="absolute left-0 top-0 w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">{String(i + 1)}</div>
+                                        <h4 className="font-bold text-slate-800 mb-1">{feat}</h4>
+                                        <span className="inline-block mt-1 bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 uppercase">{i < 2 ? 'Must-Have' : 'P1'}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="lg:col-span-7 bg-white rounded-xl border border-slate-100 shadow-sm overflow-visible flex flex-col relative z-[999]">
+                            <div className="p-8 border-b border-slate-50">
+                                <h3 className="text-xl font-bold">User Journey Flows</h3>
+                            </div>
+                            <div className="flex-1 p-8 space-y-4">
+                                {mvp.user_flows && mvp.user_flows.map((flow, i) => (
+                                    <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">{i + 1}</div>
+                                            <p className="text-slate-700 text-sm font-medium leading-relaxed">{flow}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex-1 blueprint-grid p-12 bg-slate-50/50 rounded-b-xl min-h-[200px] flex flex-col items-center justify-center gap-8 relative overflow-visible">
+                                <div className="absolute right-12 top-1/2 -translate-y-1/2 z-[999] w-32 h-32 flex items-center justify-center">
+                                    <ButterflyAI 
+                                        isActive={showButterfly} 
+                                        onClick={() => setShowButterfly(prev => !prev)} 
+                                        message="A Miro AI agent will be integrated here, which will directly open Miro with a basic architectural flow already created for you." 
+                                        className="top-1/2 left-1/2" 
+                                    />
+                                </div>
+                                <div className="w-full sm:w-40 bg-white p-3 rounded-xl shadow-sm border border-slate-200 text-center font-bold text-sm">Landing Page</div>
+                                <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full sm:w-auto items-center">
+                                    <div className="w-full sm:w-40 bg-white p-3 rounded-xl border border-slate-200 text-center font-bold text-sm">Sign-up</div>
+                                    <div className="w-full sm:w-40 bg-blue-600 p-3 rounded-xl shadow-lg text-white text-center font-bold text-sm">Setup Wizard</div>
+                                </div>
+                                <div className="w-full sm:w-40 bg-white p-3 rounded-xl border-2 border-blue-100 shadow-xl text-center font-bold text-sm">Dashboard</div>
+                            </div>
+                        </div>
+                    </div>
+                </Layout>
+            );
+        };
+
+        const BudgetPage = ({ data, hideNav }) => {
+            const [showButterfly, setShowButterfly] = useState(false);
+            const idea = data.idea;
+            const blueprint = data.blueprint;
+            const budget = blueprint.budget_and_team;
+            return (
+                <Layout title="Budget & Team" idea={idea} hideNav={hideNav}>
+                    <div className="mb-12">
+                        <h1 className="text-4xl font-bold text-on-surface mb-2">Financial Infrastructure</h1>
+                        <p className="text-lg text-slate-500">Precise allocation models for your startup. Built for runway optimization.</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                        <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><span className="material-symbols-outlined">payments</span></div>
+                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">Optimized</span>
+                            </div>
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Estimated MVP Cost</h3>
+                            <p className="text-3xl font-bold text-slate-900 font-grotesk">{budget.cost}</p>
+                        </div>
+                        <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><span className="material-symbols-outlined">groups</span></div>
+                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Target Team</span>
+                            </div>
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Key Roles Required</h3>
+                            <p className="text-3xl font-bold text-slate-900 font-grotesk">{budget.roles.length}</p>
+                        </div>
+                        <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm flex flex-col items-center justify-center">
+                            <div className="relative w-20 h-20 flex items-center justify-center">
+                                <svg className="absolute w-full h-full transform -rotate-90">
+                                    <circle className="text-slate-100" cx="40" cy="40" r="36" fill="none" stroke="currentColor" strokeWidth="8" />
+                                    <circle className="text-green-500" cx="40" cy="40" r="36" fill="none" stroke="currentColor" strokeWidth="8" strokeDasharray="226.2" strokeDashoffset="45" />
+                                </svg>
+                                <span className="text-2xl font-bold">85</span>
+                            </div>
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-4">Fiscal Confidence</h3>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-slate-50"><h2 className="text-xl font-bold text-slate-900">Key Roles to Hire</h2></div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    {budget.roles && budget.roles.map((role, i) => (
+                                        <div key={i} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">{i + 1}</div>
+                                            <span className="font-bold text-slate-800">{role}</span>
+                                            <span className="ml-auto px-2 py-1 rounded bg-blue-100 text-blue-600 text-[10px] font-bold uppercase">Priority</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl border border-slate-100 p-8 shadow-sm flex flex-col relative overflow-visible z-[999]">
+                            <div className="flex items-start gap-4 mb-6">
+                                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg"><span className="material-symbols-outlined">hiring_around</span></div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900">Hiring Strategy</h3>
+                                    <p className="text-slate-500 text-sm mt-1">Recommended roadmap for building the founding team.</p>
+                                </div>
+                            </div>
+                            <p className="text-slate-700 leading-relaxed text-base bg-slate-50 p-6 rounded-2xl border border-slate-100">{budget.hiring_plan}</p>
+                            
+                            <div className="mt-auto pt-6 flex justify-end">
+                                <div className="relative w-32 h-32 flex items-center justify-center z-[999]">
+                                    <ButterflyAI 
+                                        isActive={showButterfly} 
+                                        onClick={() => setShowButterfly(prev => !prev)} 
+                                        message="An AI agent with access to your LinkedIn will scan your connections to find the most suitable candidates for the role. Alternatively, you can build your own team here, and the hiring strategy will adjust accordingly." 
+                                        className="top-1/2 left-1/2" 
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Layout>
+            );
+        };
+
+        const GTMPage = ({ data, hideNav }) => {
+            const [showButterfly, setShowButterfly] = useState(false);
+            const idea = data.idea;
+            const blueprint = data.blueprint;
+            const gtm = blueprint.gtm_strategy;
+            return (
+                <Layout title="GTM Strategy" idea={idea} hideNav={hideNav}>
+                    <section className="mb-12 space-y-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+                            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
+                            <span className="text-xs font-bold uppercase tracking-widest">Strategy Core</span>
+                        </div>
+                        <h2 className="text-4xl font-bold text-on-surface">Go-To-Market Execution</h2>
+                        <p className="text-lg text-slate-500 max-w-2xl">Deploying your solution effectively requires a multi-threaded distribution approach.</p>
+                    </section>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                        <div className="col-span-1 md:col-span-2 bg-white rounded-xl border border-slate-100 p-8 shadow-sm">
+                            <h3 className="text-xl font-bold mb-6 text-slate-900">Core Messaging</h3>
+                            <div className="p-6 bg-blue-600 text-white rounded-2xl shadow-xl relative overflow-hidden">
+                                <span className="absolute -top-4 -right-4 material-symbols-outlined text-blue-400/30 text-8xl">campaign</span>
+                                <p className="text-xl font-medium leading-relaxed relative z-10 italic">"{gtm.messaging}"</p>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl border border-slate-100 p-8 shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Key Metrics to Track</h3>
+                            <div className="space-y-4">
+                                {gtm.metrics && gtm.metrics.map((metric, i) => (
+                                    <div key={i} className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-blue-600" />
+                                        <span className="text-slate-700 font-bold text-sm">{metric}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 relative z-[999]">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600"><span className="material-symbols-outlined">hub</span></div>
+                                <h3 className="text-xl font-bold text-slate-900">Acquisition Channels</h3>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-[999]">
+                                {gtm.channels && gtm.channels.map((channel, i) => (
+                                    <div key={i} className="p-4 border border-slate-100 rounded-xl bg-slate-50 flex items-center gap-3">
+                                        <span className="material-symbols-outlined text-blue-600 text-[20px]">check_circle</span>
+                                        <span className="text-slate-800 font-semibold text-sm">{channel}</span>
+                                    </div>
+                                ))}
+                                
+                                <div className="relative w-full h-full flex items-center justify-center min-h-[60px] z-[999]">
+                                    <div className="absolute w-32 h-32 flex items-center justify-center">
+                                        <ButterflyAI 
+                                            isActive={showButterfly} 
+                                            onClick={() => setShowButterfly(prev => !prev)} 
+                                            message="All these channels will be clickable; upon clicking, a complete list of recommended contacts, along with their details and a tailored outreach strategy, will be downloaded for you." 
+                                            className="top-1/2 left-1/2" 
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-blue-900 text-white rounded-xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-center">
+                            <div className="absolute top-0 right-0 p-8 opacity-10"><span className="material-symbols-outlined text-[120px]">insights</span></div>
+                            <h3 className="text-2xl font-bold mb-4 relative z-10">Strategic Advantage</h3>
+                            <p className="text-blue-200 leading-relaxed relative z-10">By leveraging these channels and specific messaging, you can achieve a sustainable CAC while scaling rapidly.</p>
+                        </div>
+                    </div>
+                </Layout>
+            );
+        };
+
+        const TimelinePage = ({ data, hideNav }) => {
+            const [showButterfly, setShowButterfly] = useState(false);
+            const idea = data.idea;
+            const blueprint = data.blueprint;
+            const roadmap = (blueprint.timeline && blueprint.timeline.roadmap_12_months) || [];
+            return (
+                <Layout title="Master Roadmap" idea={idea} hideNav={hideNav}>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0 mb-12 relative z-[999]">
+                        <div>
+                            <h2 className="text-4xl font-bold text-slate-900 mb-4">12-Month Roadmap</h2>
+                            <p className="text-lg text-slate-500 max-w-2xl">A curated trajectory from foundational architecture to global scaling preparation.</p>
+                        </div>
+                        <div className="relative w-full md:w-32 h-16 md:h-32 flex items-center justify-center mr-0 md:mr-16 mt-0 md:mt-4 z-[999]">
+                            <ButterflyAI 
+                                isActive={showButterfly} 
+                                onClick={() => setShowButterfly(prev => !prev)} 
+                                message="A roadmap based on similar successful applications of comparable complexity will also be provided to help you make more accurate estimates." 
+                                className="top-1/2 left-1/2" 
+                            />
+                        </div>
+                    </div>
+                    <div className="relative">
+                        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-blue-100 hidden md:block" />
+                        <div className="space-y-12">
+                            {roadmap.map((milestone, i) => (
+                                <div key={i} className="relative md:pl-24 group">
+                                    <div className="absolute left-[30px] top-0 w-4 h-4 rounded-full border-4 border-white bg-blue-600 shadow-md hidden md:block group-hover:scale-125 transition-transform duration-200" />
+                                    <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm group-hover:shadow-md transition-shadow duration-200 relative overflow-hidden">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-2 md:mb-0">Step {i + 1}</div>
+                                        </div>
+                                        <h4 className="text-xl font-bold text-slate-900 mb-2">{milestone.split(':')[0]}</h4>
+                                        <p className="text-slate-600 leading-relaxed">{milestone.includes(':') ? milestone.split(':').slice(1).join(':').trim() : milestone}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </Layout>
+            );
+        };
+
+        const InvestorsPage = ({ data, hideNav }) => {
+            const [showButterfly, setShowButterfly] = useState(false);
+            const idea = data.idea;
+            const blueprint = data.blueprint;
+            const investors = blueprint.investor_suggestions || [];
+            return (
+                <Layout title="Investor Suggestions" idea={idea} hideNav={hideNav}>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0 mb-12 relative z-[999]">
+                        <div>
+                            <h2 className="text-4xl font-bold text-slate-900 mb-2">Investor Suggestions</h2>
+                            <p className="text-lg text-slate-500">AI-curated capital partners based on your market fit, stage, and sector focus.</p>
+                            <div className="h-1 w-24 bg-blue-600 rounded-full mt-4"></div>
+                        </div>
+                        <div className="relative w-full md:w-32 h-16 md:h-32 flex items-center justify-center mr-0 md:mr-16 mt-0 md:mt-4 z-[999]">
+                            <ButterflyAI 
+                                isActive={showButterfly} 
+                                onClick={() => setShowButterfly(prev => !prev)} 
+                                message="A precise outreach strategy will be provided for each investor, including when and how to reach out, minimum requirements, and an AI agent that leverages your LinkedIn connections and email data, along with any other relevant details will also be here" 
+                                className="top-1/2 left-1/2" 
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {investors.map((inv, i) => (
+                            <div key={i} className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm hover:border-blue-300 transition-all group">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center font-black text-slate-300 border border-slate-100 text-2xl group-hover:bg-blue-50 group-hover:text-blue-200 transition-colors">{inv.name.charAt(0)}</div>
+                                    <div className="bg-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-100"><span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span> {inv.fit_score}% Match</div>
+                                </div>
+                                <h3 className="text-2xl font-bold text-slate-900 mb-1">{inv.name}</h3>
+                                <p className="text-sm text-slate-500 mb-8 line-clamp-2">Potential venture partner for your {idea} project.</p>
+                                <div className="space-y-3 pt-6 border-t border-slate-50">
+                                    <div className="flex justify-between items-center text-sm"><span className="text-slate-400 font-medium">Investment Focus</span><span className="font-bold text-blue-600">{inv.focus}</span></div>
+                                    <div className="flex justify-between items-center text-sm"><span className="text-slate-400 font-medium">Recommended Stage</span><span className="font-bold text-slate-800">Seed, Series A</span></div>
+                                </div>
+                                <button className="mt-8 w-full py-3 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">Prepare Outreach<span className="material-symbols-outlined text-[18px]">arrow_forward</span></button>
+                            </div>
+                        ))}
+                    </div>
+                </Layout>
+            );
+        };
+
+        const BlueprintReport = ({ data }) => {
+            return (
+                <div id="blueprint-pdf-container" className="bg-surface text-slate-900 w-[1280px] pdf-export">
+                    <div className="pdf-page"><MarketPage data={data} hideNav={true} /></div>
+                    <div className="pdf-page" style={{ pageBreakBefore: 'always' }}><CompetitionPage data={data} hideNav={true} /></div>
+                    <div className="pdf-page" style={{ pageBreakBefore: 'always' }}><PersonasPage data={data} hideNav={true} /></div>
+                    <div className="pdf-page" style={{ pageBreakBefore: 'always' }}><MVPPage data={data} hideNav={true} /></div>
+                    <div className="pdf-page" style={{ pageBreakBefore: 'always' }}><BudgetPage data={data} hideNav={true} /></div>
+                    <div className="pdf-page" style={{ pageBreakBefore: 'always' }}><GTMPage data={data} hideNav={true} /></div>
+                    <div className="pdf-page" style={{ pageBreakBefore: 'always' }}><TimelinePage data={data} hideNav={true} /></div>
+                    <div className="pdf-page" style={{ pageBreakBefore: 'always' }}><InvestorsPage data={data} hideNav={true} /></div>
+                </div>
+            );
+        };
+
+        // --- Router App ---
+
+        const App = () => {
+            return (
+                <MemoryRouter initialEntries={['/']}>
+                    <Routes>
+                        <Route path="/" element={<LandingPage />} />
+                        <Route path="/market" element={<MarketPage data={MOCK_DATA} />} />
+                        <Route path="/competition" element={<CompetitionPage data={MOCK_DATA} />} />
+                        <Route path="/personas" element={<PersonasPage data={MOCK_DATA} />} />
+                        <Route path="/mvp" element={<MVPPage data={MOCK_DATA} />} />
+                        <Route path="/budget" element={<BudgetPage data={MOCK_DATA} />} />
+                        <Route path="/gtm" element={<GTMPage data={MOCK_DATA} />} />
+                        <Route path="/timeline" element={<TimelinePage data={MOCK_DATA} />} />
+                        <Route path="/investors" element={<InvestorsPage data={MOCK_DATA} />} />
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
+
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
