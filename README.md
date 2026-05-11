@@ -78,12 +78,12 @@ Once you have completed the initial setup above, you can run both the frontend a
 
 **Mac/Linux:**
 ```bash
-(cd backend && source venv/bin/activate && python main.py) & (cd frontend && npm run dev)
+(cd backend && source venv/bin/activate && python main.py) & (cd frontend && npm install && npm run dev)
 ```
 
 **Windows (Command Prompt):**
 ```cmd
-start /B cmd /c "cd backend && venv\Scripts\activate && python main.py" & cd frontend && npm run dev
+start /B cmd /c "cd backend && venv\Scripts\activate && python main.py" & cd frontend && npm install && npm run dev
 ```
 
 ### 5. Use It
